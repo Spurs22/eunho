@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="main">
+	
+	<!-- 카테고리 추가 -->
+	<insert id="addCategory" parameterType="map">
+		INSERT INTO category (categoryNum, memberNum, category, enabled)
+		VALUES (category_seq.NEXTVAL, #{memberNum}, #{category}, 0)
+	</insert>
+	
+	<!-- 카테고리 리스트 -->
+	<select id="categoryList" parameterType="Long" resultType="com.sp.app.main.MainDomain">
+		SELECT categoryNum, category
+		FROM category
+		WHERE enabled = 0 AND memberNum = #{memberNum}
+		ORDER BY categoryNum
+	</select>
+	
+	<!-- 카테고리 삭제 -->
+	<update id="deleteCategory" parameterType="Long">
+		UPDATE category SET enabled = 1 WHERE categoryNum = #{categoryNum}	
+	</update>
+	
+	<!-- 카테고리 정보 -->
+	<select id="categoryInfo" parameterType="Long" resultType="com.sp.app.main.MainDomain">
+		SELECT categoryNum, category
+		FROM category
+		WHERE enabled = 0 AND categoryNum = #{categoryNum}
+	</select>
+	
+	<!-- 시작 카테고리 -->
+	<select id="startCategory" parameterType="Long" resultType="com.sp.app.main.MainDomain">
+		SELECT categoryNum, category
+		FROM category
+		WHERE enabled = 0 AND memberNum = #{memberNum}
+		ORDER BY categoryNum
+		FETCH FIRST 1 ROWS ONLY
+	</select>
+	
+	<!-- 글 저장 -->
+	<insert id="writeArticle" parameterType="com.sp.app.main.MainDomain">
+		INSERT INTO article (articleNum, subject, content, reg_date, point, categoryNum)
+		VALUES (article_seq.NEXTVAL, #{subject}, #{content}, SYSDATE, 0, #{categoryNum})
+	</insert>
+	
+	<!-- 이미지 저장 -->
+	<insert id="articleImg" parameterType="com.sp.app.main.MainDomain">
+		INSERT INTO article_img (article_img_num, articleNum, article_img_name)
+		VALUES (article_img_seq.NEXTVAL, #{articleNum}, #{article_img_name})
+	</insert>
+	
+	<!-- 글 번호 가져오기 -->
+	<select id="articleNum" resultType="Long">
+		SELECT article_seq.CURRVAL FROM dual
+	</select>
+	
+	<!-- 글 리스트 -->
+	<select id="articleList" parameterType="Long" resultType="com.sp.app.main.MainDomain">
+		SELECT a.articleNum, subject, TO_CHAR(reg_date, 'YYYY-MM-DD') reg_date, point, article_img_name
+		FROM article a
+		LEFT OUTER JOIN article_img i ON a.articleNum = i.articleNum
+		WHERE categoryNum = #{categoryNum}
+		ORDER BY point DESC, a.articleNum DESC
+	</select>
+	
+	<!-- 글 정보 -->
+	<select id="readArticle" parameterType="map" resultType="com.sp.app.main.MainDomain">
+		SELECT a.articleNum, subject, content, point, reg_date, article_img_name, category, c.categoryNum
+		FROM article a
+		JOIN category c ON a.categoryNum = c.categoryNum
+		LEFT OUTER JOIN article_img i ON a.articleNum = i.articleNum
+		WHERE a.articleNum = #{articleNum}
+	</select>
+	
+	<!-- 최근에 추가한 카테고리 -->
+	<select id="lastCategory" parameterType="map" resultType="Long">
+		SELECT categoryNum
+		FROM category
+		WHERE memberNum = #{memberNum}
+		ORDER BY categoryNum DESC
+		FETCH FIRST 1 ROWS ONLY
+	</select>
+	
+	<!-- 글 수정 -->
+	<update id="updateArticle" parameterType="com.sp.app.main.MainDomain">
+		UPDATE article SET subject = #{subject}, content = #{content}
+		WHERE articleNum = #{articleNum}
+	</update>
+	
+	<!-- 사진 삭제 -->
+	<delete id="deleteImage" parameterType="com.sp.app.main.MainDomain">
+		DELETE FROM article_img WHERE articleNum = #{articleNum}
+	</delete>
+	
+	<delete id="deleteImage2" parameterType="Long">
+		DELETE FROM article_img WHERE articleNum = #{articleNum}
+	</delete>
+	
+	<!-- 글 삭제 -->
+	<delete id="deleteArticle" parameterType="Long">
+		DELETE FROM article WHERE articleNum = #{articleNum}
+	</delete>
+	
+	<!-- 상단 고정 취소 -->
+	<update id="canclePoint" parameterType="map">
+		UPDATE article SET point = 0 WHERE articleNum = #{articleNum}
+	</update>
+	
+	<!-- 상단 고정 -->
+	<update id="point">
+		UPDATE article SET point = 1 WHERE articleNum = #{articleNum}
+	</update>
+	
+	<!-- 상단 고정 여부 -->
+	<select id="isLike" parameterType="map" resultType="Integer">
+		SELECT point FROM article WHERE articleNum = #{articleNum}
+	</select>
+	
+	<!-- 게시글 개수 -->
+	<select id="dataCount" parameterType="map" resultType="Integer">
+		SELECT NVL(COUNT(*), 0)
+		FROM article
+		<where>
+			categoryNum = #{categoryNum}
+		</where>
+	</select>
+	
+</mapper>

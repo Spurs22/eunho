@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="mypage">
+
+	<!-- 사진 등록 -->
+	<insert id="insertImage" parameterType="com.sp.app.member.Member">
+		INSERT INTO main_img (main_img_num, main_img_name, memberNum)
+		VALUES (main_img_seq.NEXTVAL, #{main_img_name}, #{memberNum})	
+	</insert>
+	
+	<!-- 사진 삭제 -->
+	<delete id="deleteImage" parameterType="Long">
+		DELETE FROM main_img WHERE memberNum = #{memberNum}
+	</delete>
+</mapper>
